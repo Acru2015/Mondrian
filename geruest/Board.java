@@ -38,6 +38,12 @@ public class Board extends JPanel implements ActionListener {
     }
 
     @Override
+    public void actionPerformed(ActionEvent e) {
+        player.move();
+        repaint();
+    }
+
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -48,24 +54,27 @@ public class Board extends JPanel implements ActionListener {
 
     private void doDrawing(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        int x = player.getX();
-        int y = player.getY();
 
         RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHints(rh);
 
-        if (x >= 0 && x < 200 && y >= 0 && y < 200) {
+        int x = player.getX();
+        int y = player.getY();
+
+        if (x >= 0 && x < 200 && y >= 0 && y < 200 && !allPoints[x][y]) {
             allPoints[x][y] = true;
             currentPointList.add(new Point(x, y));
         }
 
         g2d.setStroke(new BasicStroke(2));
 
-        g2d.setColor(Color.red);
-        drawLine(g2d);
         g2d.setColor(Color.blue);
         drawPolys(g2d);
+
+        g2d.setColor(Color.red);
+        drawLine(g2d);
+
         g2d.setColor(Color.green);
         g2d.fillOval(x, y, player.getWidth(), player.getHeight());
 
@@ -87,29 +96,40 @@ public class Board extends JPanel implements ActionListener {
 
     public void checkPolys() {
         int size = currentPointList.size();
-
-        for (Polygon p : polyList) {
-            if (p.contains(currentPointList.get(size - 1))) {
-                addPoly(currentPointList);
-                floodCompare(currentPointList.get(currentPointList.size() - 1));
-                currentPointList.clear();
-                return;
+        if (size > 0) {
+            for (Polygon p : polyList) {
+                /*if (p.contains(player.getX(), player.getY())) {
+                    allPoints[player.getX()][player.getY()] = true;
+                }*/
+                if (p.contains(currentPointList.get(size - 1))) {
+                    flood(currentPointList.get(currentPointList.size() - 1));
+                    addPoly(currentPointList);
+                    currentPointList.clear();
+                    return;
+                }
             }
-
         }
     }
 
-    private void floodCompare(Point2D p2d) {
+    private void flood(Point2D p2d) {
         int x = (int) p2d.getX();
         int y = (int) p2d.getY();
+
         int[] leftUp = null;
         int[] leftDown = null;
         int[] rightUp = null;
         int[] rightDown = null;
-        LinkedList leftDownPoints = new LinkedList<>();
+
+        ReturnData leftUpData = null;
+        ReturnData leftDownData = null;
+        ReturnData rightUpData = null;
+        ReturnData rightDownData = null;
+
+        /*LinkedList leftDownPoints = new LinkedList<>();
         LinkedList leftUpPoints = new LinkedList<>();
         LinkedList rightDownPoints = new LinkedList<>();
-        LinkedList rightUpPoints = new LinkedList<>();
+        LinkedList rightUpPoints = new LinkedList<>();*/
+
         if (x > 0) {
             if (y > 0 && !allPoints[x - 1][y - 1]) {
                 leftUp = new int[]{x - 1, y - 1};
@@ -127,21 +147,23 @@ public class Board extends JPanel implements ActionListener {
             }
         }
         if (leftUp != null) {
-            leftUpPoints = floodList(leftUp, new LinkedList<>(), new boolean[200][200]);
+            leftUpData = floodList(leftUp, new LinkedList<>(), new boolean[200][200]);
         }
         if (leftDown != null) {
-            leftDownPoints = floodList(leftDown, new LinkedList<>(), new boolean[200][200]);
+            leftDownData = floodList(leftDown, new LinkedList<>(), new boolean[200][200]);
         }
         if (rightUp != null) {
-            rightUpPoints = floodList(rightUp, new LinkedList<>(), new boolean[200][200]);
+            rightUpData = floodList(rightUp, new LinkedList<>(), new boolean[200][200]);
         }
         if (rightDown != null) {
-            rightDownPoints = floodList(rightDown, new LinkedList<>(), new boolean[200][200]);
+            rightDownData = floodList(rightDown, new LinkedList<>(), new boolean[200][200]);
         }
-        floodFill(getSecond(leftUpPoints, leftDownPoints, rightUpPoints, rightDownPoints));
+        ReturnData second = getSecond(leftUpData, leftDownData, rightUpData, rightDownData);
+        floodFill(second.getLinkedList());
+        mergePoints(second.getBooleans());
     }
 
-    private LinkedList floodList(int[] cords, LinkedList<Point2D> wraps, boolean[][] visited) {
+    private ReturnData floodList(int[] cords, LinkedList<Point2D> wraps, boolean[][] visited) {
         int x = cords[0];
         int y = cords[1];
         visited[x][y] = true;
@@ -173,40 +195,56 @@ public class Board extends JPanel implements ActionListener {
                 floodList(new int[]{x, y + 1}, wraps, visited);
             }
         }
-        return wraps;
+        return new ReturnData(wraps, visited);
     }
 
-    private LinkedList getSecond(LinkedList leftUpPoints, LinkedList leftDownPoints, LinkedList rightUpPoints, LinkedList rightDownPoints) {
-        LinkedList helper1;
-        LinkedList helper2;
-        if (leftUpPoints.size() > rightUpPoints.size()) {
-            helper1 = leftUpPoints;
-        } else {
-            helper1 = rightUpPoints;
-        }
-        if (leftDownPoints.size() > rightDownPoints.size()) {
-            helper2 = leftUpPoints;
-        } else {
-            helper2 = rightUpPoints;
-        }
-        return helper1.size() > helper2.size() ? helper1 : helper2;
-    }
 
     private void floodFill(LinkedList points) {
         addPoly(points);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        player.move();
-        repaint();
+    private void mergePoints(boolean[][] booleans) {    //Merges all Points of floodfill into allPoints
+        for (int i = 0; i < booleans.length; i++) {
+            for (int j = 0; j < booleans[i].length; j++) {
+                if (booleans[i][j]) {
+                    allPoints[i][j] = true;
+                }
+            }
+        }
+    }
 
+    private ReturnData getSecond(ReturnData leftUpData, ReturnData leftDownData, ReturnData rightUpData, ReturnData rightDownData) {
+        ReturnData helper1;
+        ReturnData helper2;
+        if (leftUpData == null) {
+            leftUpData = new ReturnData();
+        }
+        if (leftDownData == null) {
+            leftDownData = new ReturnData();
+        }
+        if (rightUpData == null) {
+            rightUpData = new ReturnData();
+        }
+        if (rightDownData == null) {
+            rightDownData = new ReturnData();
+        }
+        if (leftUpData.size() > rightUpData.size()) {
+            helper1 = leftDownData;
+        } else {
+            helper1 = leftUpData;
+        }
+        if (leftDownData.size() > rightDownData.size()) {
+            helper2 = leftDownData;
+        } else {
+            helper2 = leftUpData;
+        }
+        return helper1.size() > helper2.size() ? helper1 : helper2;
     }
 
     private void addPoly(CopyOnWriteArrayList pointList) {
-        int[] x = new int[pointList.size()];
-        int[] y = new int[pointList.size()];
         int n = pointList.size();
+        int[] x = new int[n];
+        int[] y = new int[n];
         for (int i = 0; i < n; i++) {
             x[i] = (int) this.currentPointList.get(i).getX();
             y[i] = (int) this.currentPointList.get(i).getY();
@@ -215,14 +253,55 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void addPoly(LinkedList pointList) {
-        int[] x = new int[pointList.size()];
-        int[] y = new int[pointList.size()];
+        System.out.println("Poly added");
         int n = pointList.size();
-        for (int i = 0; i < n - 1; i++) {
-            x[i] = (int) this.currentPointList.get(i).getX();
-            y[i] = (int) this.currentPointList.get(i).getY();
+        int[] x = new int[n];
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) {
+            try {
+                x[i] = (int) this.currentPointList.get(i).getX();
+                y[i] = (int) this.currentPointList.get(i).getY();
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //System.err.println(e);
+            }
         }
         this.polyList.add(new Polygon(x, y, n));
+    }
+
+    private class ReturnData {
+
+        private LinkedList<Point2D> linkedList;
+        private boolean[][] booleans;
+
+        public ReturnData() {
+            linkedList = new LinkedList<>();
+            linkedList.add(new Point(0, 0));
+            booleans = new boolean[1][1];
+        }
+
+        public ReturnData(LinkedList<Point2D> linkedList, boolean[][] booleans) {
+            this.linkedList = linkedList;
+            this.booleans = booleans;
+        }
+
+        public LinkedList getLinkedList() {
+            return linkedList;
+        }
+
+        public boolean[][] getBooleans() {
+            return booleans;
+        }
+
+        public int size() {
+            return linkedList.size();
+        }
+
+        /*public void increase(){
+            if (linkedList == null) {
+                linkedList = new LinkedList<>();
+            }
+            linkedList.addLast(new Point(0, 0));
+        }*/
     }
 
     private class TAdapter extends KeyAdapter {
@@ -230,6 +309,7 @@ public class Board extends JPanel implements ActionListener {
         @Override
         public void keyReleased(KeyEvent e) {
             player.keyReleased(e);
+            checkPolys();
         }
 
         @Override
