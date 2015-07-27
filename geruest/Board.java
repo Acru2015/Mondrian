@@ -83,10 +83,10 @@ public class Board extends JPanel implements ActionListener {
     private void drawPolys(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        polyList.forEach(g2d::fill);
+        polyList.forEach(g2d::fill);        //fill each polynome
     }
 
-    private void drawLine(Graphics g) {
+    private void drawLine(Graphics g) { //draw a line out of the current points
         Graphics2D g2d = (Graphics2D) g;
 
         for (Point2D c : currentPointList) {
@@ -94,7 +94,7 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    public void checkPolys() {
+    public void checkPolys() {                      //check whether the line reached a polynome
         int size = currentPointList.size();
         if (size > 0) {
             for (Polygon p : polyList) {
@@ -111,7 +111,7 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void flood(Point2D p2d) {
+    private void flood(Point2D p2d) {       //coordinates the calculation of the sizes of the empty spaces and the filling of them
         int x = (int) p2d.getX();
         int y = (int) p2d.getY();
 
@@ -124,11 +124,6 @@ public class Board extends JPanel implements ActionListener {
         ReturnData leftDownData = null;
         ReturnData rightUpData = null;
         ReturnData rightDownData = null;
-
-        /*LinkedList leftDownPoints = new LinkedList<>();
-        LinkedList leftUpPoints = new LinkedList<>();
-        LinkedList rightDownPoints = new LinkedList<>();
-        LinkedList rightUpPoints = new LinkedList<>();*/
 
         if (x > 0) {
             if (y > 0 && !allPoints[x - 1][y - 1]) {
@@ -163,7 +158,7 @@ public class Board extends JPanel implements ActionListener {
         mergePoints(second.getBooleans());
     }
 
-    private ReturnData floodList(int[] cords, LinkedList<Point2D> wraps, boolean[][] visited) {
+    private ReturnData floodList(int[] cords, LinkedList<Point2D> wraps, boolean[][] visited) {     //generate a list of free points of polynome
         int x = cords[0];
         int y = cords[1];
         visited[x][y] = true;
@@ -199,7 +194,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
 
-    private void floodFill(LinkedList points) {
+    private void floodFill(LinkedList points) {     //make a polynome out of the fitting points
         addPoly(points);
     }
 
@@ -213,8 +208,8 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private ReturnData getSecond(ReturnData leftUpData, ReturnData leftDownData, ReturnData rightUpData, ReturnData rightDownData) {
-        ReturnData helper1;
+    private ReturnData getSecond(ReturnData leftUpData, ReturnData leftDownData, ReturnData rightUpData, ReturnData rightDownData) {        //get second hightest element to fill, biggest is to be left free,
+        ReturnData helper1;                                                                                                                 //2 smaller should be empty
         ReturnData helper2;
         if (leftUpData == null) {
             leftUpData = new ReturnData();
@@ -241,7 +236,7 @@ public class Board extends JPanel implements ActionListener {
         return helper1.size() > helper2.size() ? helper1 : helper2;
     }
 
-    private void addPoly(CopyOnWriteArrayList pointList) {
+    private void addPoly(CopyOnWriteArrayList pointList) {      //Method to add a Polynome out of a CopyOnWriteArrayList of Points, since polygons need 2 seperate arrays of x cords and y cords
         int n = pointList.size();
         int[] x = new int[n];
         int[] y = new int[n];
@@ -252,7 +247,7 @@ public class Board extends JPanel implements ActionListener {
         this.polyList.add(new Polygon(x, y, n));
     }
 
-    private void addPoly(LinkedList pointList) {
+    private void addPoly(LinkedList pointList) {        //Method to add a Polynome out of a Linked list of Points
         System.out.println("Poly added");
         int n = pointList.size();
         int[] x = new int[n];
@@ -262,21 +257,20 @@ public class Board extends JPanel implements ActionListener {
                 x[i] = (int) this.currentPointList.get(i).getX();
                 y[i] = (int) this.currentPointList.get(i).getY();
             } catch (ArrayIndexOutOfBoundsException e) {
-                //System.err.println(e);
+                System.err.println(e.getMessage());
             }
         }
         this.polyList.add(new Polygon(x, y, n));
     }
 
-    private class ReturnData {
+    private class ReturnData {      //Data Structure to return the List of the needed Points and the boolarray of the visited Points
 
         private LinkedList<Point2D> linkedList;
         private boolean[][] booleans;
 
         public ReturnData() {
             linkedList = new LinkedList<>();
-            linkedList.add(new Point(0, 0));
-            booleans = new boolean[1][1];
+            booleans = new boolean[0][0];
         }
 
         public ReturnData(LinkedList<Point2D> linkedList, boolean[][] booleans) {
@@ -295,13 +289,6 @@ public class Board extends JPanel implements ActionListener {
         public int size() {
             return linkedList.size();
         }
-
-        /*public void increase(){
-            if (linkedList == null) {
-                linkedList = new LinkedList<>();
-            }
-            linkedList.addLast(new Point(0, 0));
-        }*/
     }
 
     private class TAdapter extends KeyAdapter {
