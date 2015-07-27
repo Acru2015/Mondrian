@@ -55,9 +55,6 @@ public class Board extends JPanel implements ActionListener {
         rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHints(rh);
 
-
-        //System.out.println("x: " + x + " y: " + y);
-
         if (x >= 0 && x < 200 && y >= 0 && y < 200) {
             allPoints[x][y] = true;
             currentPointList.add(new Point(x, y));
@@ -69,19 +66,15 @@ public class Board extends JPanel implements ActionListener {
         drawLine(g2d);
         g2d.setColor(Color.blue);
         drawPolys(g2d);
-        //checkPolys();
         g2d.setColor(Color.green);
         g2d.fillOval(x, y, player.getWidth(), player.getHeight());
 
-        //System.out.println(polyList.size());
     }
 
     private void drawPolys(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        for (Polygon p : polyList) {
-            g2d.fill(p);
-        }
+        polyList.forEach(g2d::fill);
     }
 
     private void drawLine(Graphics g) {
@@ -94,12 +87,11 @@ public class Board extends JPanel implements ActionListener {
 
     public void checkPolys() {
         int size = currentPointList.size();
-        //System.out.println("Size:" + size);
 
         for (Polygon p : polyList) {
             if (p.contains(currentPointList.get(size - 1))) {
                 addPoly(currentPointList);
-                floodCompare(currentPointList.get(currentPointList.size()-1));
+                floodCompare(currentPointList.get(currentPointList.size() - 1));
                 currentPointList.clear();
                 return;
             }
@@ -226,7 +218,7 @@ public class Board extends JPanel implements ActionListener {
         int[] x = new int[pointList.size()];
         int[] y = new int[pointList.size()];
         int n = pointList.size();
-        for (int i = 0; i < n-1; i++) {
+        for (int i = 0; i < n - 1; i++) {
             x[i] = (int) this.currentPointList.get(i).getX();
             y[i] = (int) this.currentPointList.get(i).getY();
         }
