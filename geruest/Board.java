@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Board extends JPanel implements ActionListener {
 
     private final int DELAY = 10;
-    Polys polys = new Polys();
+    Polys polys;
     private Timer timer;
     private Player player;
     private CopyOnWriteArrayList<Point2D> currentPointList = new CopyOnWriteArrayList<>();
@@ -27,13 +27,17 @@ public class Board extends JPanel implements ActionListener {
 
         player = new Player();
 
+        polys = new Polys();
+
+        for (int i = 0; i < 200; i++) {
+            allPoints[0][i] = true;
+            allPoints[199][i] = true;
+            allPoints[i][0] = true;
+            allPoints[i][199] = true;
+        }
+
         timer = new Timer(DELAY, this);
         timer.start();
-
-        polys.add(new Polygon(new int[]{0, 200, 200, 0}, new int[]{0, 0, 1, 1}, 4));
-        polys.add(new Polygon(new int[]{193, 200, 200, 193}, new int[]{0, 0, 200, 200}, 4));
-        polys.add(new Polygon(new int[]{0, 200, 200, 0}, new int[]{171, 171, 200, 200}, 4));
-        polys.add(new Polygon(new int[]{0, 1, 1, 0}, new int[]{0, 0, 200, 200}, 4));
     }
 
     @Override
@@ -71,7 +75,8 @@ public class Board extends JPanel implements ActionListener {
         g2d.setStroke(new BasicStroke(2));
 
         g2d.setColor(Color.blue);
-        polys.drawPolys(g2d);
+        //polys.drawPolys(g2d);
+        drawPoints(g2d);
 
         g2d.setColor(Color.red);
         drawLine(g2d);
@@ -79,6 +84,16 @@ public class Board extends JPanel implements ActionListener {
         g2d.setColor(Color.green);
         g2d.fillOval(x, y, player.getWidth(), player.getHeight());
 
+    }
+
+    private void drawPoints(Graphics2D g2d) {
+        for (int i = 0; i < allPoints.length; i++) {
+            for (int j = 0; j < allPoints[i].length; j++) {
+                if (allPoints[i][j]) {
+                    g2d.drawLine(i, j, i, j);
+                }
+            }
+        }
     }
 
     private void drawLine(Graphics g) { //draw a line out of the current points
@@ -90,10 +105,12 @@ public class Board extends JPanel implements ActionListener {
     }
 
     public void mergePoints(boolean[][] booleans) {    //Merges all Points of floodfill into allPoints
-        for (int i = 0; i < booleans.length; i++) {
-            for (int j = 0; j < booleans[i].length; j++) {
-                if (booleans[i][j]) {
-                    allPoints[i][j] = true;
+        if (booleans != null) {
+            for (int i = 0; i < booleans.length; i++) {
+                for (int j = 0; j < booleans[i].length; j++) {
+                    if (booleans[i][j]) {
+                        allPoints[i][j] = true;
+                    }
                 }
             }
         }
