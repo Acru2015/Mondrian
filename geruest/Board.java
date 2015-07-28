@@ -13,6 +13,7 @@ public class Board extends JPanel implements ActionListener {
     Polys polys;
     private Timer timer;
     private Player player;
+    private Enemy enemy;
     private CopyOnWriteArrayList<Point2D> currentPointList = new CopyOnWriteArrayList<>();
     private boolean[][] allPoints = new boolean[200][200];
 
@@ -26,6 +27,7 @@ public class Board extends JPanel implements ActionListener {
         setBackground(Color.white);
 
         player = new Player();
+        enemy = new Enemy();
 
         polys = new Polys();
 
@@ -43,6 +45,7 @@ public class Board extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         player.move();
+        enemy.move();
         repaint();
     }
 
@@ -62,27 +65,33 @@ public class Board extends JPanel implements ActionListener {
         rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHints(rh);
 
-        int x = player.getX();
-        int y = player.getY();
-        //System.out.println("X: " + x + " Y: " + y);
-        //System.out.println(allPoints[x][y]);
+        int playerX = player.getX();
+        int playerY = player.getY();
 
-        if (x >= 0 && x < 200 && y >= 0 && y < 200) {
-            //allPoints[x][y] = true;
-            currentPointList.add(new Point(x, y));
+        int enemyX = enemy.getX();
+        int enemyY = enemy.getY();
+        //System.out.println("X: " + playerX + " Y: " + playerY);
+        //System.out.println(allPoints[playerX][playerY]);
+
+        if (playerX >= 0 && playerX < 200 && playerY >= 0 && playerY < 200) {
+            //allPoints[playerX][playerY] = true;
+            currentPointList.add(new Point(playerX, playerY));
         }
 
         g2d.setStroke(new BasicStroke(2));
+
+        g2d.setColor(Color.red);
+        drawLine(g2d);
 
         g2d.setColor(Color.blue);
         //polys.drawPolys(g2d);
         drawPoints(g2d);
 
-        g2d.setColor(Color.red);
-        drawLine(g2d);
-
         g2d.setColor(Color.green);
-        g2d.fillOval(x, y, player.getWidth(), player.getHeight());
+        g2d.fillOval(playerX, playerY, player.getWidth(), player.getHeight());
+
+        g2d.setColor(Color.red);
+        g2d.fillOval(enemyX, enemyY, enemy.getWidth(), enemy.getHeight());
 
     }
 
