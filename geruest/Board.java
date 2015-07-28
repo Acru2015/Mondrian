@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
+import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Board extends JPanel implements ActionListener {
@@ -100,7 +101,7 @@ public class Board extends JPanel implements ActionListener {
         if (size > 0) {
             for (Polygon p : polyList) {
                 if (p.contains(currentPointList.get(size - 1))) {
-                    flood(currentPointList.get(size / 2));  //starte flood von der hälfte der Linie aus
+                    flood(currentPointList.get(size - 1));  //starte flood von der hälfte der Linie aus
                     addPoly(currentPointList);
                     currentPointList.clear();
                     return;
@@ -153,7 +154,10 @@ public class Board extends JPanel implements ActionListener {
         }
         ReturnData second = getSecond(leftUpData, leftDownData, rightUpData, rightDownData);
         floodFill(second.getCopyOnWriteArrayList());
-        //mergePoints(second.getBooleans());
+        //if (second.size() < 20000) {
+        mergePoints(second.getBooleans());
+        //}
+        System.out.println("Merged! " + second.size());
     }
 
     private ReturnData floodList(int[] cords, CopyOnWriteArrayList<Point2D> wraps, boolean[][] visited) {     //generate a list of free points of polynome
@@ -213,8 +217,6 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private ReturnData getSecond(ReturnData leftUpData, ReturnData leftDownData, ReturnData rightUpData, ReturnData rightDownData) {        //get second hightest element to fill, biggest is to be left free,
-        ReturnData helper1;                                                                                                                 //2 smaller should be empty
-        ReturnData helper2;
         if (leftUpData == null) {
             leftUpData = new ReturnData();
         }
@@ -227,17 +229,38 @@ public class Board extends JPanel implements ActionListener {
         if (rightDownData == null) {
             rightDownData = new ReturnData();
         }
-        if (leftUpData.size() > rightUpData.size()) {
-            helper1 = leftUpData;
-        } else {
-            helper1 = rightUpData;
+
+        LinkedList<ReturnData> listReturns = new LinkedList<>();
+        listReturns.add(leftUpData);
+        listReturns.add(leftDownData);
+        listReturns.add(rightUpData);
+        listReturns.add(rightDownData);
+        sortBubble(listReturns);
+        return listReturns.get(2);
+    }
+
+    private void sortBubble(LinkedList<ReturnData> listReturns) {
+        ReturnData[] arrayReturns = new ReturnData[listReturns.size()];
+        for (int i = 0; i < arrayReturns.length; i++) {
+            arrayReturns[i] = listReturns.get(i);
         }
-        if (leftDownData.size() > rightDownData.size()) {
-            helper2 = leftDownData;
-        } else {
-            helper2 = rightDownData;
-        }
-        return helper1.size() > helper2.size() ? helper1 : helper2;
+        int swaps;
+        int size = arrayReturns.length;
+        do {
+            swaps = 0;
+            for (int i = 0; i < size - 1; i++) {
+                if (arrayReturns[i].size() < arrayReturns[i + 1].size()) {
+                    ReturnData helper = arrayReturns[i];
+                    arrayReturns[i] = arrayReturns[i + 1];
+                    arrayReturns[i + 1] = helper;
+                    swaps++;
+                }
+            }
+        } while (swaps != 0);
+    }
+
+    private void swap(ReturnData arrayReturn0, ReturnData arrayReturn1) {
+
     }
 
     private void addPoly(CopyOnWriteArrayList<Point2D> pointList) {      //Method to add a Polynome out of a CopyOnWriteArrayList of Points, since polygons need 2 seperate arrays of x cords and y cords
@@ -251,24 +274,6 @@ public class Board extends JPanel implements ActionListener {
         }
         this.polyList.add(new Polygon(x, y, n));
     }
-
-    /*private void addPoly(LinkedList pointList) {        //Method to add a Polynome out of a Linked list of Points
-        System.out.println("Poly being added");
-        System.out.println("LL size: " + pointList.size());
-        int n = pointList.size();
-        int[] x = new int[n];
-        int[] y = new int[n];
-        for (int i = 0; i < n; i++) {
-            //try {
-                int xhelper = (int) this.currentPointList.get(i).getX();
-                x[i] = xhelper;
-                y[i] = (int) this.currentPointList.get(i).getY();
-            //} catch (ArrayIndexOutOfBoundsException e) {
-            //    System.err.println("Error: " + e.getMessage());
-            //}
-        }
-        this.polyList.add(new Polygon(x, y, n));
-    }*/
 
     private class ReturnData {      //Data Structure to return the List of the needed Points and the boolarray of the visited Points
 
@@ -312,5 +317,4 @@ public class Board extends JPanel implements ActionListener {
             checkPolys();
         }
     }
-
 }
