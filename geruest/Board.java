@@ -67,8 +67,8 @@ public class Board extends JPanel implements ActionListener {
         //System.out.println("X: " + x + " Y: " + y);
         //System.out.println(allPoints[x][y]);
 
-        if (x >= 0 && x < 200 && y >= 0 && y < 200 && !allPoints[x][y]) {
-            allPoints[x][y] = true;
+        if (x >= 0 && x < 200 && y >= 0 && y < 200) {
+            //allPoints[x][y] = true;
             currentPointList.add(new Point(x, y));
         }
 

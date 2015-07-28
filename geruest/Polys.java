@@ -6,6 +6,7 @@ public class Polys {
     private CopyOnWriteArrayList<Polygon> polyList;
     private boolean[][] allPoints;
     private boolean[][] pointsToMerge;
+    private boolean[][] pointListArray;
 
     public Polys() {
         this.polyList = new CopyOnWriteArrayList<>();
@@ -27,22 +28,27 @@ public class Polys {
 
     public void checkPolys(CopyOnWriteArrayList<Point2D> currentPointList, boolean[][] allPoints) {                      //check whether the line reached a polygon
         this.allPoints = allPoints;
+        this.pointListArray = toArray(currentPointList);
 
         int size = currentPointList.size();
+
         if (size > 0) {
-            if (allPoints[((int) currentPointList.get(size - 1).getX())][((int) currentPointList.get(size - 1).getY())]) {
-                flood(currentPointList.get(size - 1));
+            int x = (int) currentPointList.get(size - 1).getX();
+            int y = (int) currentPointList.get(size - 1).getY();
+
+            if (allPoints[x][y]) {
+                flood(currentPointList.get(size / 2));
                 currentPointList.clear();
             }
-            /*for (Polygon p : polyList) {
-                if (p.contains(currentPointList.get(size - 1))) {
-                    flood(currentPointList.get(size - 1));  //starte flood von Punkt x der Linie aus
-                    //addPoly(currentPointList);
-                    currentPointList.clear();
-                    return;
-                }
-            }*/
         }
+    }
+
+    private boolean[][] toArray(CopyOnWriteArrayList<Point2D> currentPointList) {
+        boolean[][] helper = new boolean[200][200];
+        for (Point2D p2d : currentPointList) {
+            helper[((int) p2d.getX())][((int) p2d.getY())] = true;
+        }
+        return helper;
     }
 
     private void addPoly(CopyOnWriteArrayList<Point2D> points) {      //Method to add a Polynome out of a CopyOnWriteArrayList of Points, since polygons need 2 seperate arrays of x cords and y cords
@@ -75,18 +81,18 @@ public class Polys {
         ReturnData rightDownData = null;
 
         if (x > 0) {
-            if (y > 0 && !allPoints[x - 1][y - 1]) {
+            if (y > 0 && !allPoints[x - 1][y - 1] && !pointListArray[x - 1][y - 1]) {
                 leftUp = new int[]{x - 1, y - 1};
             }
-            if (y < 199 && !allPoints[x - 1][y + 1]) {
+            if (y < 199 && !allPoints[x - 1][y + 1] && !pointListArray[x - 1][y + 1]) {
                 leftDown = new int[]{x - 1, y + 1};
             }
         }
         if (x < 199) {
-            if (y > 0 && !allPoints[x + 1][y - 1]) {
+            if (y > 0 && !allPoints[x + 1][y - 1] && !pointListArray[x + 1][y - 1]) {
                 rightUp = new int[]{x + 1, y - 1};
             }
-            if (y < 199 && !allPoints[x + 1][y + 1]) {
+            if (y < 199 && !allPoints[x + 1][y + 1] && !pointListArray[x + 1][y + 1]) {
                 rightDown = new int[]{x + 1, y + 1};
             }
         }
@@ -113,30 +119,30 @@ public class Polys {
         int y = cords[1];
         visitedBoolArray[x][y] = true;
         if (x > 0) {
-            if (allPoints[x - 1][y]) {
+            if (allPoints[x - 1][y] || pointListArray[x - 1][y]) {
                 wraps.add(new Point(x - 1, y));
-            } else if (!visitedBoolArray[x - 1][y]) {
+            } else if (!visitedBoolArray[x - 1][y] && !pointListArray[x - 1][y]) {
                 floodList(new int[]{x - 1, y}, wraps, visitedBoolArray);
             }
         }
         if (x < 199) {
-            if (allPoints[x + 1][y]) {
+            if (allPoints[x + 1][y] || pointListArray[x + 1][y]) {
                 wraps.add(new Point(x + 1, y));
-            } else if (!visitedBoolArray[x + 1][y]) {
+            } else if (!visitedBoolArray[x + 1][y] && !pointListArray[x + 1][y]) {
                 floodList(new int[]{x + 1, y}, wraps, visitedBoolArray);
             }
         }
         if (y > 0) {
-            if (allPoints[x][y - 1]) {
+            if (allPoints[x][y - 1] || pointListArray[x][y - 1]) {
                 wraps.add(new Point(x, y - 1));
-            } else if (!visitedBoolArray[x][y - 1]) {
+            } else if (!visitedBoolArray[x][y - 1] && !pointListArray[x][y - 1]) {
                 floodList(new int[]{x, y - 1}, wraps, visitedBoolArray);
             }
         }
         if (y < 199) {
-            if (allPoints[x][y + 1]) {
+            if (allPoints[x][y + 1] || pointListArray[x][y + 1]) {
                 wraps.add(new Point(x, y + 1));
-            } else if (!visitedBoolArray[x][y + 1]) {
+            } else if (!visitedBoolArray[x][y + 1] && !pointListArray[x][y + 1]) {
                 floodList(new int[]{x, y + 1}, wraps, visitedBoolArray);
             }
         }
