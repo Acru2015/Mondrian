@@ -10,12 +10,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Board extends JPanel implements ActionListener {
 
     private final int DELAY = 10;
-    Polys polys;
+    private Polys polys;
     private Timer timer;
     private Player player;
     private Enemy enemy;
-    private CopyOnWriteArrayList<Point2D> currentPointList = new CopyOnWriteArrayList<>();
-    private boolean[][] allPoints = new boolean[200][200];
+    private CopyOnWriteArrayList<Point2D> currentPointList = new CopyOnWriteArrayList<>();      //Points of line
+    private boolean[][] allPoints = new boolean[200][200];          //matrix of all points, whether visited or not
 
     public Board() {
         initBoard();
@@ -31,7 +31,7 @@ public class Board extends JPanel implements ActionListener {
 
         polys = new Polys();
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 200; i++) {         //generate outer lines
             allPoints[0][i] = true;
             allPoints[199][i] = true;
             allPoints[i][0] = true;
@@ -70,11 +70,8 @@ public class Board extends JPanel implements ActionListener {
 
         int enemyX = enemy.getX();
         int enemyY = enemy.getY();
-        //System.out.println("X: " + playerX + " Y: " + playerY);
-        //System.out.println(allPoints[playerX][playerY]);
 
-        if (playerX >= 0 && playerX < 200 && playerY >= 0 && playerY < 200) {
-            //allPoints[playerX][playerY] = true;
+        if (playerX >= 0 && playerX < 200 && playerY >= 0 && playerY < 200) {       //if inside boundarys, add to cPL
             currentPointList.add(new Point(playerX, playerY));
         }
 
@@ -84,7 +81,6 @@ public class Board extends JPanel implements ActionListener {
         drawLine(g2d);
 
         g2d.setColor(Color.blue);
-        //polys.drawPolys(g2d);
         drawPoints(g2d);
 
         g2d.setColor(Color.green);
@@ -95,7 +91,7 @@ public class Board extends JPanel implements ActionListener {
 
     }
 
-    private void drawPoints(Graphics2D g2d) {
+    private void drawPoints(Graphics2D g2d) {                       //fill the areas by drawing a line from each point to itself
         for (int i = 0; i < allPoints.length; i++) {
             for (int j = 0; j < allPoints[i].length; j++) {
                 if (allPoints[i][j]) {
@@ -136,14 +132,14 @@ public class Board extends JPanel implements ActionListener {
         @Override
         public void keyReleased(KeyEvent e) {
             player.keyReleased(e);
-            polys.checkPolys(currentPointList, allPoints);
+            polys.checkPoints(currentPointList, allPoints);
             mergePoints(polys.getPointsToMerge());
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
             player.keyPressed(e);
-            polys.checkPolys(currentPointList, allPoints);
+            polys.checkPoints(currentPointList, allPoints);
             mergePoints(polys.getPointsToMerge());
         }
     }

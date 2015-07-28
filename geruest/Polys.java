@@ -16,17 +16,19 @@ public class Polys {
         return pointsToMerge;
     }
 
+    @Deprecated
     public void add(Polygon poly) {
         polyList.add(poly);
     }
 
+    @Deprecated
     public void drawPolys(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
         this.polyList.forEach(g2d::fill);        //fill each polygon
     }
 
-    public void checkPolys(CopyOnWriteArrayList<Point2D> currentPointList, boolean[][] allPoints) {                      //check whether the line reached a polygon
+    public void checkPoints(CopyOnWriteArrayList<Point2D> currentPointList, boolean[][] allPoints) {                      //check whether the line reached a already marked Point
         this.allPoints = allPoints;
         this.pointListArray = toArray(currentPointList);
 
@@ -43,7 +45,7 @@ public class Polys {
         }
     }
 
-    private boolean[][] toArray(CopyOnWriteArrayList<Point2D> currentPointList) {
+    private boolean[][] toArray(CopyOnWriteArrayList<Point2D> currentPointList) {           //Transform arraylist of Points into 2 Dimenional matrix wiith bools for every point
         boolean[][] helper = new boolean[200][200];
         for (Point2D p2d : currentPointList) {
             helper[((int) p2d.getX())][((int) p2d.getY())] = true;
@@ -51,6 +53,7 @@ public class Polys {
         return helper;
     }
 
+    @Deprecated
     private void addPoly(CopyOnWriteArrayList<Point2D> points) {      //Method to add a Polynome out of a CopyOnWriteArrayList of Points, since polygons need 2 seperate arrays of x cords and y cords
         int n = points.size();
         int[] x = new int[n];
@@ -108,9 +111,9 @@ public class Polys {
         if (rightDown != null) {
             rightDownData = floodList(rightDown, new CopyOnWriteArrayList<>(), new boolean[200][200]);
         }
+
         ReturnData[] listReturns = new ReturnData[]{leftUpData, leftDownData, rightUpData, rightDownData};
         ReturnData second = getSecond(listReturns);
-        //addPoly(second.getCopyOnWriteArrayList());
         pointsToMerge = second.getBooleans();
     }
 
@@ -155,18 +158,16 @@ public class Polys {
                 returnDataArray[i] = new ReturnData();
             }
         }
+
         sortBubble(returnDataArray);
-        System.out.println(returnDataArray[returnDataArray.length - 1].size());
-        System.out.println(returnDataArray[returnDataArray.length - 2].size());
-        System.out.println(returnDataArray[returnDataArray.length - 3].size());
-        System.out.println(returnDataArray[returnDataArray.length - 4].size());
+
         if (returnDataArray[returnDataArray.length - 2].size() == returnDataArray[returnDataArray.length - 1].size()) {
             return returnDataArray[0];
         }
         return returnDataArray[returnDataArray.length - 2];
     }
 
-    private void sortBubble(ReturnData[] arrayReturns) {
+    private void sortBubble(ReturnData[] arrayReturns) {            //sort array asc
         int swaps;
         int size = arrayReturns.length;
         do {
